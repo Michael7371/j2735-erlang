@@ -2,14 +2,14 @@
 
 main([Module, MessageType, FilePath]) ->
     Message = random_message(list_to_atom(Module), list_to_atom(MessageType)),
-    erlang:display(Message),
-    file:write_file(FilePath ++ ".src", io_lib:format("~p.~n", [Message])),
-    Uper = get_uper(list_to_atom(Module), list_to_atom(MessageType), Message),
-    erlang:display(Uper),
-    file:write_file(FilePath ++ ".bin", Uper),
-    Hex = binary:encode_hex(Uper),
-    file:write_file(FilePath ++ ".hex", Hex),
-    erlang:display(Hex);
+    erlang:display(Message);
+    % file:write_file(FilePath ++ ".src", io_lib:format("~p.~n", [Message])),
+    % Uper = get_uper(list_to_atom(Module), list_to_atom(MessageType), Message),
+    % erlang:display(Uper),
+    % file:write_file(FilePath ++ ".bin", Uper),
+    % Hex = binary:encode_hex(Uper),
+    % file:write_file(FilePath ++ ".hex", Hex),
+    % erlang:display(Hex);
 main([Module, MessageType]) ->
     Message = random_message(list_to_atom(Module), list_to_atom(MessageType)),
     erlang:display(Message);
@@ -93,12 +93,10 @@ fix('NodeListXY', NL) ->
     fix('NodeListXY', element(1, NL), NL);
 fix('NodeSetXY', NS) ->
     % Strip attributes
-    % NS2 = [setelement(3, NS1, asn1_NOVALUE) || NS1 <- NS],
-    NS2 = strip_attributes('NodeSetXY', NS),
+    NS2 = fix_attributes('NodeSetXY', NS),
     % Remove regional nodes
-    % NS3 = [N || N <- NS2, element(1, element(2, N)) =/= regional],
     NS3 = strip_regional('NodeSetXY', NS2),
-    % At leaset 2 nodes are required.  Add nodes if less.
+    % At least 2 nodes are required. Add nodes if less.
     NS4 = ensure_2_nodes(NS3),
     NS4;
 fix('Position3D', P) ->
@@ -130,9 +128,41 @@ fix(_, Unk) ->
 strip_attributes('NodeSetXY', NS) ->
     [setelement(3, NS1, asn1_NOVALUE) || NS1 <- NS].
 
+fix_attributes('NodeSetXY', NS) ->
+    [fix_node_attributes(N) || N <- NS].
+
+fix_node_attributes(Node) ->
+    case element(3, Node) of
+        asn1_NOVALUE -> Node;
+        {'NodeAttributeSetXY', LocalNodes, Enabled, Disabled, Data, Dwidth, DElevation, _Regionals} ->
+            % Filter out any regional attributes from Data list
+            CleanData = lists:filter(
+                fun(D) -> 
+                    case D of
+                        {regional, _} -> false;
+                        {'RegionalExtension', _, _} -> false;
+                        _ -> true
+                    end
+                end, 
+                Data),
+            % Keep all fields but clean up Data and set Regionals to asn1_NOVALUE
+            NewAttrs = {'NodeAttributeSetXY', 
+                       LocalNodes, 
+                       Enabled, 
+                       Disabled, 
+                       CleanData, 
+                       Dwidth, 
+                       DElevation, 
+                       asn1_NOVALUE},
+            setelement(3, Node, NewAttrs);
+        Other ->
+            % For any other unexpected format, strip it entirely
+            setelement(3, Node, asn1_NOVALUE)
+    end.
+
 ensure_2_nodes(NS) when length(NS) < 2 ->
     AddNode = [ random_message('Common', 'NodeXY') | NS],
-    Stripped = strip_attributes('NodeSetXY', strip_regional('NodeSetXY', AddNode)),
+    Stripped = fix_attributes('NodeSetXY', strip_regional('NodeSetXY', AddNode)),
     ensure_2_nodes(Stripped);
 ensure_2_nodes(NS) when length(NS) >= 2 ->
     NS.
