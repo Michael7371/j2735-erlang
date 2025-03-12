@@ -320,4 +320,4 @@ generate_test_messages() ->
     [begin
         Filename = "rsm_" ++ integer_to_list(N),
         main(["rsm", Filename])
-     end || N <- lists:seq(1, 5)].
+     end || N <- lists:seq(1, 10)].
