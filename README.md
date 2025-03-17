@@ -130,3 +130,44 @@ Output:
 
 
 
+Regex to match all RegionalExtensions:
+
+asn1_NOVALUE
+
+```
+\[\s*(\{\s*'RegionalExtension'[\s\S\n]*?\}\s*)+\]
+\s*(\{\s*'LaneAttributes_regional'[\s\S\n]*?\}\s*)
+\s*(\{\s*'NodeOffsetPointXY_regional'[\s\S\n]*?\}\s*)
+\s*(\{\s*'SignalControlZone_zone'[\s\S\n]*?\}\s*)
+
+```
+
+
+MAP:
+```erlang
+{ok, MapNodeAttribute} = asn1ct:value('Common', 'NodeAttributeSetXY').
+
+{ok, [MapNodeAttributeSetReload]} = file:consult("../examples/NodeAttributeSetXY.src").
+{ok, MapNodeAttributeSetUper} = 'Common':encode('NodeAttributeSetXY', MapNodeAttributeSetReload).
+
+
+{ok, MapNodeAttribute} = asn1ct:value('Common', 'NodeXY').
+file:write_file("../examples/NodeXY.src", io_lib:format("~p.~n", [MapNodeAttribute])).
+
+{ok, [MapNodeXYReload]} = file:consult("../examples/NodeXY.src").
+{ok, MapNodeXYUper} = 'Common':encode('NodeXY', MapNodeXYReload).
+
+
+{ok, MapNodeAttribute} = asn1ct:value('MapData', 'GenericLane').
+file:write_file("../examples/generic_lane.src", io_lib:format("~p.~n", [MapNodeAttribute])).
+
+{ok, [GenericLaneReload]} = file:consult("../examples/generic_lane.src").
+{ok, GenericLaneUper} = 'MapData':encode('GenericLane', GenericLaneReload).
+
+
+{ok, MapData} = asn1ct:value('MapData', 'MapData').
+file:write_file("../examples/map_manual.src", io_lib:format("~p.~n", [MapData])).
+
+{ok, [MapReload]} = file:consult("../examples/map_manual.src").
+{ok, MapUper} = 'MapData':encode('MapData', MapReload).
+```

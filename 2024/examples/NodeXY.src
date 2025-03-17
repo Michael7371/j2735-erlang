@@ -1,0 +1,11 @@
+{'NodeXY',
+    {'node-XY4',{'Node-XY-26b',-2006,-3483}},
+    {'NodeAttributeSetXY',
+        [safeIsland,roundedCapStyleB,safeIsland,reserved,curbPresentAtStepOff],
+        [sharedBikeLane],
+        [rumbleStripPresent,adjacentParkingOnRight,loadingzoneOnRight],
+        [{pathEndPointAngle,111},
+         {pathEndPointAngle,-4},
+         {speedLimits,[{'RegulatorySpeedLimit',vehicleMaxSpeed,5072}]}],
+        153,373,
+        asn1_NOVALUE}}.

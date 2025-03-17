@@ -18,7 +18,7 @@ main(_) ->
 
 
 usage() ->
-    io:format("usage:\n from bash shell:\n\n./random_bsm.escript MapData 'filepath'\n\n"),
+    io:format("usage:\n from bash shell:\n\n./random_map.escript MapData MapData 'filepath'\n\n"),
     halt(1).
 
 fix_element(Index, Tuple, Type)  when is_number(Index) and is_tuple(Tuple) and is_atom(Type) ->
